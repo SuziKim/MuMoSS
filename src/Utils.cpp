@@ -1,5 +1,37 @@
 #include "Utils.hpp"
 
+Mat Utils::ArmadilloKmeansClustering(vector<Mat> descriptors, int nClusters){
+	int samples = 0;
+	for(Mat d : descriptors) {
+		samples = samples + d.rows;
+	}
+	
+	/* Armadillo: "with each sample stored as a column vector" */
+	arma::fmat data(descriptors[0].cols, samples);
+	int col = 0;
+	for(Mat d : descriptors) {
+		for(int i = 0; i < d.rows; i++) {
+			for(int j = 0; j < d.cols; j++) {
+				data(j,col) = d.at<float>(i,j);
+			}
+			col++;
+		}
+	}
+	arma::fmat result;
+	arma::kmeans(result, data, nClusters, arma::random_subset, 250, true);
+	
+	/* Going back to cv::Mat format */	
+	Mat ret(result.n_cols, result.n_rows, CV_32F);	
+	for(int col = 0; col < result.n_cols; col++) {
+		for(int row = 0; row < result.n_rows; row++) {
+			ret.at<float>(col,row) = result(row,col);
+		}
+	}
+
+	return ret;
+}
+
+
 Mat Utils::kmeansClustering(vector<Mat> descriptors, int nClusters){
 	Mat samples, labels, dic;
 	for(Mat m : descriptors) {
@@ -123,13 +155,13 @@ double Utils::euclideanDistance(Mat d1, Mat d2) {
 	return sqrt(distance);
 }
 
-vector<double> Utils::extractBoFHistogram(Mat descriptor, Mat dictionary) {
+void Utils::extractBoFHistogram(vector<double> &histogram, Mat &descriptor, Mat &dictionary) {
 	if(descriptor.cols != dictionary.cols) {
+		cout.clear();
 		cout << "ERROR! The BoF dictionary and the descriptors should have the same size!" << endl;
 		exit(-1); 
 	}
-	
-	vector<double> histogram;
+
 	for(int i = 0; i < dictionary.rows; i++) {
 		histogram.push_back(0.0);
 	}
@@ -137,12 +169,13 @@ vector<double> Utils::extractBoFHistogram(Mat descriptor, Mat dictionary) {
 	for(int i = 0; i < descriptor.rows; i++) {
 		Mat desc = descriptor.row(i);
 		vector<double> temp;
-		for(int j = 0; j < dictionary.rows; i++) {
+		for(int j = 0; j < dictionary.rows; j++) {
 			Mat dic = dictionary.row(j);
 			temp.push_back(Utils::euclideanDistance(desc,dic));
 		}
 		int indexMin = min_element(temp.begin(), temp.end()) - temp.begin();
-		histogram[indexMin]++;
+		temp.clear();
+		histogram[indexMin]++;		
 	}
 	
 	double su = 0.0;
@@ -152,7 +185,6 @@ vector<double> Utils::extractBoFHistogram(Mat descriptor, Mat dictionary) {
 	for(int i = 0; i < histogram.size(); i++) {
 		histogram[i] = histogram[i] / su;
 	}
-	return histogram;	
 }
 
 void Utils::writeCSVMat(string file, Mat data) {
@@ -179,6 +211,28 @@ void Utils::writeCSVVector(string file, vector< vector<double> > data) {
 	f.close();
 }
 
+vector< vector<double> > Utils::parseCSVHistograms(string filePath) {
+	ifstream file(filePath.c_str());
+	string line;
+	string token;
+	vector< vector<double> > values;
+	
+	if(file.is_open()) {
+		while(getline(file,line)) {
+			istringstream str(line);
+			vector<double> temp;
+			while(getline(str,token,',')) {
+				temp.push_back(atof(token.c_str()));
+			}
+			values.push_back(temp);
+			temp.clear();
+		}
+	}	
+    	file.close();
+    	
+	return values;
+}
+
 string Utils::calculateMD5(string file) {
 	ifstream inFile;
 	inFile.open (file, ios::binary | ios::in);
@@ -192,6 +246,7 @@ string Utils::calculateMD5(string file) {
 	
 	string ret = md5(fData, length);
 	delete [] fData;
+	inFile.close();
 	
 	return ret;
 }

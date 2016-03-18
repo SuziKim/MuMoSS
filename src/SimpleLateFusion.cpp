@@ -24,66 +24,129 @@ void SimpleLateFusion::execute() {
 	unsigned nThreads = thread::hardware_concurrency();
 	cout << "Running some tasks with " << to_string(nThreads) << " threads" << endl;
 			
-	cout << "Extracting SIFT descriptors" << endl;
-//	SiftExtractor sift(this->videoPath, nThreads, desiredFrames);
-//	sift.extract();	
-//	vector<Mat> visualDescriptors = sift.getDescriptors();
+	cout << "Extracting visual SIFT descriptors" << endl;
+	SiftExtractor sift(this->videoPath, nThreads, desiredFrames);
+	sift.extract();	
+	vector<Mat> visualDescriptors = sift.getDescriptors();
 	
-	
-	/* This method is ULTRA SLOW. Do it in other thread! */	
-	cout << "Building the visual dictionary" << endl;
-//	future<Mat> fVisualDic(async(&Utils::kmeansClustering, visualDescriptors, this->vDicSize));
-		
-		
-	/* Also slow. Do it in another thread! */
-	cout << "Extracting the aural descriptors" << endl;
-	vector<Mat> auralDescriptors = Utils::parseAuralDescriptors(this->aDescFolder);
-	
-	Mat auralDictionary;
-	if(this->tempFiles) {
-		if(Utils::checkFile(baseFile + "_aural_dictionary_" + to_string(this->aDicSize) + ".csv")) {
-			cout << "Loading aural dictionary from file" << endl;
-			auralDictionary = Utils::parseCSVDescriptor(baseFile + "_aural_dictionary_" + to_string(this->aDicSize) + ".csv");
-		} else {
-			cout << "Creating aural dictionary from file" << endl;
-			auralDictionary = Utils::kmeansClustering(auralDescriptors, this->aDicSize);
-		}
+	/* Visual Dictionary block */
+	Mat visualDictionary;
+	future<Mat> fVisualDic;
+	bool vDicControl = false;	
+	if(this->tempFiles && Utils::checkFile(baseFile + "_slf_visual_dictionary_" + to_string(this->vDicSize) + ".csv")) {
+		cout << "Loading visual dictionary from file" << endl;
+		visualDictionary = Utils::parseCSVDescriptor(baseFile + "_slf_visual_dictionary_" + to_string(this->vDicSize) + ".csv");
 	} else {
-		cout << "Creating aural dictionary from file" << endl;
-		auralDictionary = Utils::kmeansClustering(auralDescriptors, this->aDicSize);
-		cout << "Salving aural dictionary into a file" << endl;
-		Utils::writeCSVMat(baseFile + "_aural_dictionary_" + to_string(this->aDicSize) + ".csv", auralDictionary);
+		cout << "Creating visual dictionary" << endl;
+		fVisualDic = std::async(&Utils::ArmadilloKmeansClustering, visualDescriptors, this->vDicSize);
+		vDicControl = true;
+	}	
+	
+	/* Aural Dictionary block */
+	vector<Mat> auralDescriptors = Utils::parseAuralDescriptors(this->aDescFolder);	
+	future<Mat> fAuralDic;	
+	Mat auralDictionary;
+	bool aDicControl = false;	
+	if(this->tempFiles && Utils::checkFile(baseFile + "_slf_aural_dictionary_" + to_string(this->aDicSize) + ".csv")) {
+		cout << "Loading aural dictionary from file" << endl;
+		auralDictionary = Utils::parseCSVDescriptor(baseFile + "_slf_aural_dictionary_" + to_string(this->aDicSize) + ".csv");
+	} else {
+		cout << "Creating aural dictionary" << endl;
+		fAuralDic = std::async(&Utils::ArmadilloKmeansClustering, auralDescriptors, this->aDicSize);
+		aDicControl = true;
 	}
 	
-	cout << "Creating aural histograms" << endl;
-	vector< vector<double> > auralHistograms = this->createHistograms(auralDescriptors, auralDictionary);
+	/* Aural Dictionary saving block */
+	if(aDicControl) {
+		auralDictionary = fAuralDic.get();
+		cout << "Aural dictionary successfully created" << endl;		
+		if(this->tempFiles) {
+			cout << "Salving aural dictionary into a file" << endl;
+			Utils::writeCSVMat(baseFile + "_slf_aural_dictionary_" + to_string(this->aDicSize) + ".csv", auralDictionary);
+		}		
+	}
+		
+	/* Aural Histogram block */
+	future< vector< vector<double> > > fAuralHist;
+	vector< vector<double> > auralHistogram;
+	bool aHistControl = false;
+	if(this->tempFiles && Utils::checkFile(baseFile + "_slf_aural_histogram_" + to_string(this->aDicSize) + ".csv")) {
+		cout << "Loading aural histograms' from file" << endl;
+		auralHistogram = Utils::parseCSVHistograms(baseFile + "_slf_aural_histogram_" + to_string(this->aDicSize) + ".csv");
+	} else {
+		cout << "Creating aural histograms'" << endl;
+		fAuralHist = std::async(&SimpleLateFusion::createHistograms, this, auralDescriptors, auralDictionary);
+		aHistControl = true;
+	}
+		
+	/* Visual Dictionary saving block */
+	if(vDicControl) {	
+		visualDictionary = fVisualDic.get();	
+		cout << "Visual dictionary successfully created" << endl;	
+		if(this->tempFiles) {
+			cout << "Salving visual dictionary into a file" << endl;
+			Utils::writeCSVMat(baseFile + "_slf_visual_dictionary_" + to_string(this->vDicSize) + ".csv", visualDictionary);
+		}	
+	}
 	
-//	Mat visualDictionary = fVisualDic.get();
+	/* Aural Histogram saving block	*/
+	if(aHistControl) {
+		auralHistogram = fAuralHist.get();	
+		cout << "Aural histogram successfully created" << endl;	
+		if(this->tempFiles) {
+			cout << "Salving aural histograms' into a file" << endl;
+			Utils::writeCSVVector(baseFile + "_slf_aural_histogram_" + to_string(this->aDicSize) + ".csv", auralHistogram);
+		}		
+	}
 	
+	/* Visual Histogram block */
+	future< vector< vector<double> > > fVisualHist;
+	vector< vector<double> > visualHistogram;
+	bool vHistControl = false;
+	if(this->tempFiles && Utils::checkFile(baseFile + "_slf_visual_histogram_" + to_string(this->vDicSize) + ".csv")) {
+		cout << "Loading visual histograms' from file" << endl;
+		visualHistogram = Utils::parseCSVHistograms(baseFile + "_slf_visual_histogram_" + to_string(this->vDicSize) + ".csv");
+	} else {
+		cout << "Creating visual histograms'" << endl;
+		fVisualHist = std::async(&SimpleLateFusion::createHistograms, this, visualDescriptors, visualDictionary);
+		vHistControl = true;
+	}
+	
+	/* Visual Histogram saving block */
+	if(vHistControl) {
+		visualHistogram = fVisualHist.get();	
+		cout << "Visual histogram successfully created" << endl;	
+		if(this->tempFiles) {
+			cout << "Salving visual histograms' into a file" << endl;
+			Utils::writeCSVVector(baseFile + "_slf_visual_histogram_" + to_string(this->vDicSize) + ".csv", visualHistogram);
+		}
+	}
+	
+	/* */
 }
 
 vector< vector<double> > SimpleLateFusion::createHistograms(vector<Mat> descriptors, Mat dictionary) {
 	vector< vector<double> > histograms(descriptors.size());
-	vector< future< vector<double> > > futures;
+	vector<thread> pool;
 	
-	int actual = 0;
+	int index = 0;
 	unsigned nThreads = thread::hardware_concurrency();
 	
-	for(Mat descriptor : descriptors) {
-		if(futures.size() >= nThreads) {
-			for(auto &f : futures) {
-				histograms[actual] = f.get();
-				actual++;
+	for(int i = 0; i < descriptors.size(); i++) {
+		if(pool.size() >= nThreads) {
+			for(int i = 0 ; i < pool.size(); i++) {
+				pool[i].join();
 			}
-			futures.clear();
+			pool.clear();
 		}
-		futures.push_back(async(&Utils::extractBoFHistogram, descriptor, dictionary));
+		pool.push_back(thread(&Utils::extractBoFHistogram, std::ref(histograms[i]), std::ref(descriptors[i]), std::ref(dictionary)));
 	}
-	for(auto &f : futures) {
-		histograms[actual] = f.get();
-		actual++;
+	
+	for(int i = 0 ; i < pool.size(); i++) {
+		pool[i].join();
 	}
-	futures.clear();
+	
+	pool.clear();
 	return histograms;
 }
 

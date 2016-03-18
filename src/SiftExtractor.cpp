@@ -7,6 +7,7 @@ SiftExtractor::SiftExtractor(string videoPath, int numThreads, vector<int> desir
 		this->siftDescriptors.push_back(Mat());
 	}
 	if(numThreads <= 0) {
+		cout.clear();
 		cout << "SiftExtractor: The number of threads cannot be less than 1!" << endl;
 		exit(-1);
 	}
@@ -17,28 +18,26 @@ vector<Mat> SiftExtractor::getDescriptors() {
 	return this->siftDescriptors;
 }
 
-void SiftExtractor::extractSift(Mat frame, int pos) {
+void SiftExtractor::extractSift(Mat &out, Mat frame) {
 	Mat gray;	
 	
 	SiftFeatureDetector detector;
 	SiftDescriptorExtractor extractor;	
 	vector<KeyPoint> kp;
-	Mat descriptor;
 	
 	cvtColor(frame,gray,CV_BGR2GRAY);
 	detector.detect(gray,kp);
-	extractor.compute(gray,kp,descriptor);
+	extractor.compute(gray,kp,out);
 	
 	frame.release();
 	gray.release();
 	kp.clear();
-	
-	siftDescriptors[pos] = descriptor;
 }
 
 void SiftExtractor::extract() {
 	VideoCapture video(videoPath);
 	if(!video.isOpened()) {
+		cout.clear();
 		cout << "SiftExtractor: Error opening the video file" << endl;
 		exit(-1);
 	}
@@ -62,7 +61,7 @@ void SiftExtractor::extract() {
 				}
 				pool.clear();
 			}
-			pool.push_back(thread(&SiftExtractor::extractSift,this,frame,frameIndex));
+			pool.push_back(thread(&SiftExtractor::extractSift,this,std::ref(this->siftDescriptors[frameIndex]),frame));
 			frameIndex++;
 		}
 		fNum++;

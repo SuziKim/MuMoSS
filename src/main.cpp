@@ -33,9 +33,15 @@ int main(int argc, char* argv[]) {
 	string kfPath = "/home/tiago/github/iceage_tomadas_novo.csv";
 	string auralDescriptorsFolder = "/home/tiago/basevideos/mfcc_iceage/";	
 	bool generateTempFiles = true;
+	bool verbose = true;
 	vector< pair<int,int> > keyframes = extractKeyframes(kfPath);
 	
-	int vDicSize = 200;
+	if(!verbose) {
+		cout.setstate(std::ios_base::failbit);
+	}
+	
+	
+	int vDicSize = 500;
 	int aDicSize = 50;
 	
 	SimpleLateFusion slf(vPath, vDicSize, aDicSize, keyframes, auralDescriptorsFolder, generateTempFiles);

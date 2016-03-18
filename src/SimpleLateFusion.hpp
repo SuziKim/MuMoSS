@@ -13,6 +13,7 @@
 #include <future>
 #include <thread>
 #include <stdlib.h>
+#include <cmath>
 
 #include "SiftExtractor.hpp"
 #include "Utils.hpp"

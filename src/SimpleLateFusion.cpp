@@ -84,7 +84,7 @@ void SimpleLateFusion::execute() {
 		auralHistogram = Utils::parseCSVHistograms(baseFile + "_slf_aural_histogram_" + to_string(this->aDicSize) + ".csv");
 	} else {
 		cout << "Creating aural histograms'" << endl;
-		fAuralHist = std::async(&SimpleLateFusion::createHistograms, this, auralDescriptors, auralDictionary);
+		fAuralHist = std::async(&Utils::createHistogramsFromDescriptors, auralDescriptors, auralDictionary);
 		aHistControl = true;
 	}
 		
@@ -117,7 +117,7 @@ void SimpleLateFusion::execute() {
 		visualHistogram = Utils::parseCSVHistograms(baseFile + "_slf_visual_histogram_" + to_string(this->vDicSize) + ".csv");
 	} else {
 		cout << "Creating visual histograms'" << endl;
-		fVisualHist = std::async(&SimpleLateFusion::createHistograms, this, visualDescriptors, visualDictionary);
+		fVisualHist = std::async(&Utils::createHistogramsFromDescriptors, visualDescriptors, visualDictionary);
 		vHistControl = true;
 	}
 	
@@ -131,14 +131,18 @@ void SimpleLateFusion::execute() {
 		}
 	}
 	
-	cout << "Performing multimodal fusion" << endl;
-	vector< vector< vector<double> > > shots = Utils::histogramsConcat(visualHistogram, auralHistogram, this->keyframes);
-	
-	cout << "Scene segmentation" << endl;
+	cout << "Performing visual scene segmentation" << endl;
 	/* TODO: Make the windowSize and simFactor as args */
-	vector< pair<int,int> > scenes = Utils::sceneSegmentation(10, 0.2, shots, this->keyframes);
-	Utils::normalizePairs(scenes,1);
+	vector< vector< vector<double> > > visualShots = Utils::generateShotsFromHistogram(visualHistogram, this->keyframes);
+	vector< pair<int,int> > visualScenes = Utils::sceneSegmentation(10, 0.2, visualShots, this->keyframes);
 	
+	cout << "Perfoming aural scene segmentation" << endl;
+	vector< vector< vector<double> > > auralShots = Utils::generateShotsFromHistogram(auralHistogram, this->keyframes);
+	vector< pair<int,int> > auralScenes = Utils::sceneSegmentation(10, 0.2, auralShots, this->keyframes);
+	
+	cout << "Perfoming multimodal late fusion" << endl;	
+	vector< pair<int,int> > scenes = this->scenesFusion(visualScenes, auralScenes);
+	Utils::normalizePairs(scenes,1);
 	
 	cout << "Writing scene segmentation" << endl;
 	string outFile = baseFile + "_slf_scene_segmentation_v" + to_string(this->vDicSize) + "_a" + to_string(this->aDicSize) + ".csv";
@@ -147,33 +151,118 @@ void SimpleLateFusion::execute() {
 	}
 	
 	Utils::writeOutputFile(outFile, scenes);	
-	
-	
 }
 
-vector< vector<double> > SimpleLateFusion::createHistograms(vector<Mat> descriptors, Mat dictionary) {
-	vector< vector<double> > histograms(descriptors.size());
-	vector<thread> pool;
+
+vector< pair<int,int> > SimpleLateFusion::scenesFusion(vector< pair<int,int> > visualScenes, vector< pair<int,int> > auralScenes) {
+	vector<bool> vTrans(visualScenes.back().second+1, false);
+	vector<bool> aTrans(auralScenes.back().second+1, false);
+	vector<bool> fTrans(visualScenes.back().second+1, false);
 	
-	int index = 0;
-	unsigned nThreads = thread::hardware_concurrency();
+	for(pair<int,int> p : visualScenes) {
+		vTrans[p.second] = true;
+	}
+	vTrans.back() = false;
 	
-	for(int i = 0; i < descriptors.size(); i++) {
-		if(pool.size() >= nThreads) {
-			for(int i = 0 ; i < pool.size(); i++) {
-				pool[i].join();
-			}
-			pool.clear();
+	for(pair<int,int> p : auralScenes) {
+		aTrans[p.second] = true;
+	}
+	aTrans.back() = false;
+	
+	/* If the two modalities says that there is a transition, accept it */
+	for(int i = 0; i < vTrans.size(); i++) {
+		if(vTrans[i] && aTrans[i]) {
+			fTrans[i] = true;
+			/* Remove those transitions from further analysis */
+			vTrans[i] = false;
+			aTrans[i] = false;
+		}		
+	}
+		
+	/* If there is two consecutive transitions, accept the first one */
+	for(int i = 1; i < vTrans.size()-1; i++) {
+		if(vTrans[i] && vTrans[i+1]) {
+			fTrans[i] = true;
+			vTrans[i] = false;
+			vTrans[i+1] = false;
 		}
-		pool.push_back(thread(&Utils::extractBoFHistogram, std::ref(histograms[i]), std::ref(descriptors[i]), std::ref(dictionary)));
+		if(aTrans[i] && aTrans[i+1]) {
+			fTrans[i] = true;
+			aTrans[i] = false;
+			aTrans[i+1] = false;
+		}
+		if((aTrans[i] && vTrans[i+1]) || (vTrans[i] && aTrans[i+1])) {
+			fTrans[i] = true;
+			aTrans[i] = false;
+			aTrans[i+1] = false;
+			vTrans[i] = false;
+			vTrans[i+1] = false;
+		}		
 	}
 	
-	for(int i = 0 ; i < pool.size(); i++) {
-		pool[i].join();
+	/* TODO: Variable windows size? */
+	int acceptWindow = 3;
+	for(int i = 0; i < vTrans.size(); i++) {
+		
+		if(vTrans[i] || aTrans[i]) {
+			int maxIndex = i;
+			int minIndex = i;
+			
+			for(int j = i - acceptWindow; j < i; j++) {
+				if(j < 0) {
+					continue;
+				}
+				if(aTrans[j] || vTrans[j]) {
+					minIndex = j;
+					break;
+				}
+			}
+			
+			for(int j = i + acceptWindow; j > i; j--) {
+				if(j > vTrans.size()) {
+					continue;
+				}
+				if(aTrans[j] || vTrans[j]) {
+					minIndex = j;
+					break;
+				}
+			}
+			
+			for(int j = i - acceptWindow; j <= i; j++) {
+				if(j < 0) {
+					continue;
+				}
+				aTrans[j] = false;
+				vTrans[j] = false;
+			}
+			
+			for(int j = i + acceptWindow; j >= i; j--) {
+				if(j > vTrans.size()) {
+					continue;
+				}
+				aTrans[j] = false;
+				vTrans[j] = false;
+			}
+			
+			
+			int avgIndex = (maxIndex + minIndex) / 2;
+			fTrans[avgIndex] = true;
+		}		
 	}
 	
-	pool.clear();
-	return histograms;
+	/* Convert back from vector<bool> to vector<pair<int,int>> */
+	
+	int initial = 0;
+	vector< pair<int,int> > ret;
+	for(int i = 1; i < fTrans.size(); i++) {
+		if(fTrans[i]) {
+			ret.push_back(make_pair(initial,i));
+			initial = i+1;
+		}
+	}
+	ret.push_back(make_pair(initial, fTrans.size()));
+	
+	return ret;	
 }
 
 

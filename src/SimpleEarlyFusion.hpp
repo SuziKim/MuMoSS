@@ -1,5 +1,5 @@
-#ifndef SIMPLELATEFUSION_H
-#define SIMPLELATEFUSION_H
+#ifndef SIMPLEEARLYFUSION_H
+#define SIMPLEEARLYFUSION_H
 
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -21,7 +21,7 @@
 using namespace std;
 using namespace cv;
 
-class SimpleLateFusion {
+class SimpleEarlyFusion {
 	private:
 		string videoPath;
 		int vDicSize, aDicSize;
@@ -30,10 +30,10 @@ class SimpleLateFusion {
 		bool tempFiles;
 		
 		vector<Mat> parseAuralDescriptors();
-		vector< pair<int,int> > scenesFusion(vector< pair<int,int> > visualScenes, vector< pair<int,int> > auralScenes);
+		vector< vector<double> > createHistograms(vector<Mat> descriptors, Mat dictionary);
 		
 	public:
-		SimpleLateFusion(string videoPath, int vDicSize, int aDicSize, vector< pair<int,int> > keyframes, string aDescFolder, bool tempFiles);	
+		SimpleEarlyFusion(string videoPath, int vDicSize, int aDicSize, vector< pair<int,int> > keyframes, string aDescFolder, bool tempFiles);	
 		void execute();
 		
 		

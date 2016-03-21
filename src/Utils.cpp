@@ -286,6 +286,28 @@ vector< vector< vector<double> > > Utils::histogramsConcat(vector< vector<double
 	return shots;
 }
 
+vector< vector< vector<double> > > Utils::generateShotsFromHistogram(vector< vector<double> > hist, vector< pair<int,int> > keyframes) {
+	vector< vector< vector<double> > > shots(keyframes.back().first + 1);
+	
+	/* Its an aural histogram */
+	if(hist.size() == shots.size()) {
+		cout << "Aural histogram" << endl;
+		for(int i = 0; i < hist.size(); i++) {
+			shots[i].push_back(hist[i]);
+		}
+	} else {
+		/* Its an visual histogram */
+		cout << "Visual histogram" << endl;
+		for(int i = 0; i < keyframes.size(); i++) {
+			int shot = keyframes[i].first;			
+			shots[shot].push_back(hist[i]);
+		} 
+	}
+	
+	return shots;
+}
+
+
 vector< pair<int,int> > Utils::sceneSegmentation(int windowsSize, double simFactor, vector< vector< vector<double> > > shots, vector< pair<int,int> > keyframes) {
 	vector<double> similarity;
 	similarity.push_back(0.0);
@@ -314,7 +336,6 @@ vector< pair<int,int> > Utils::sceneSegmentation(int windowsSize, double simFact
 	scenes.push_back(make_pair(initial,similarity.size()));
 		
 	return scenes;
-		
 }
 
 double Utils::minEuclideanDistance(vector< vector<double> > h1, vector< vector<double> > h2) {
@@ -326,4 +347,30 @@ double Utils::minEuclideanDistance(vector< vector<double> > h1, vector< vector<d
 		}
 	}
 	return dist;
+}
+
+
+vector< vector<double> > Utils::createHistogramsFromDescriptors(vector<Mat> descriptors, Mat dictionary) {
+	vector< vector<double> > histograms(descriptors.size());
+	vector<thread> pool;
+	
+	int index = 0;
+	unsigned nThreads = thread::hardware_concurrency();
+	
+	for(int i = 0; i < descriptors.size(); i++) {
+		if(pool.size() >= nThreads) {
+			for(int i = 0 ; i < pool.size(); i++) {
+				pool[i].join();
+			}
+			pool.clear();
+		}
+		pool.push_back(thread(&Utils::extractBoFHistogram, std::ref(histograms[i]), std::ref(descriptors[i]), std::ref(dictionary)));
+	}
+	
+	for(int i = 0 ; i < pool.size(); i++) {
+		pool[i].join();
+	}
+	
+	pool.clear();
+	return histograms;
 }

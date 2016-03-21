@@ -11,6 +11,7 @@
 
 #include "Utils.hpp"
 #include "SimpleLateFusion.hpp"
+#include "SimpleEarlyFusion.hpp"
 #include "SiftExtractor.hpp"
 
 using namespace std;
@@ -85,12 +86,15 @@ int main(int argc, char* argv[]) {
 	string algorithm = string(argv[4]);
 	vector< pair<int,int> > keyframes = extractKeyframes(kfPath);
 	
-	if(algorithm == "slt" || algorithm == "SLT") {
+	if(algorithm == "slf" || algorithm == "SLF") {
+		cout << "Running the Simple Late Fusion algorithm" << endl;
 		SimpleLateFusion slf(vPath, vDicSize, aDicSize, keyframes, auralDescriptorsFolder, tempFiles);
 		slf.execute();
 	} else {
 		if(algorithm == "sef" || algorithm == "SEF") {
-			//TODO!
+			cout << "Running the Simple Early Fusion algorithm" << endl;
+			SimpleEarlyFusion sef(vPath, vDicSize, aDicSize, keyframes, auralDescriptorsFolder, tempFiles);
+			sef.execute();
 		} else {
 			cout << "Algorithm '" << algorithm << "' not found!" << endl;
 		}

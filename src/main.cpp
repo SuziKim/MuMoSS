@@ -29,38 +29,72 @@ vector< pair<int,int> > extractKeyframes(string kfPath) {
 }
 
 int main(int argc, char* argv[]) {
-	//string vPath = "/home/tiago/basevideos/doutorado_audio/iceage_puro_com_audio.mp4";
-	string vPath = "/home/tiago/basevideos/originais/BackFuture.mkv";
-	string kfPath = "/home/tiago/github/iceage_tomadas_novo.csv";
-	string auralDescriptorsFolder = "/home/tiago/basevideos/mfcc_iceage/";	
-	bool generateTempFiles = true;
-	bool verbose = true;
+	
+	if(argc < 7 || argc > 9) {
+		cout << "Incorrect parameter count." << endl;
+		cout << "./MuMoSS <videoFilePath> <keyframesFilePath.csv> <auralDescriptorsFolder> <algorithm> <visualDictionarySize> <auralDictionarySize> [<useTemporaryFiles> <verbose>]" << endl;
+		cout << "Example: " << endl;
+		cout << "./MuMoSS video.avi keyframes.csv audio_features/ slf 100 25 yes no" << endl;
+		return 1;
+	}
+	
+	string vPath = string(argv[1]);
+	if(!Utils::checkFile(vPath)) {
+		cout << "The videoFilePath seems to be invalid or cannot be read" << endl;
+		return 1;
+	}
+	
+	string kfPath = string(argv[2]);
+	if(!Utils::checkFile(kfPath)) {
+		cout << "The keyframesFilePath seems to be invalid or cannot be read" << endl;
+		return 1;
+	}
+	
+	string auralDescriptorsFolder = string(argv[3]);
+	if(!Utils::checkFolder(auralDescriptorsFolder)) {
+		cout << "The auralDescriptorsFolder could not be found" << endl;
+		return 1;
+	}
+	
+	int vDicSize = atoi(argv[5]);
+	if(vDicSize <= 0) {
+		cout << "The visualDictionarySize value is invalid" << endl;
+		return 1;	
+	}
+	int aDicSize = atoi(argv[6]);
+	if(aDicSize <= 0) {
+		cout << "The auralDictionarySize value is invalid" << endl;
+		return 1;	
+	}
+		
+	bool tempFiles = true;	
+	if(argc > 7) {
+		string strTempFile = string(argv[7]);
+		if(strTempFile == "No" || strTempFile == "no" || strTempFile == "NO" || strTempFile == "nO") {
+			tempFiles = false;
+		}
+	}
+	
+	if(argc > 8) {
+		string strV = string(argv[8]);
+		if(strV == "No" || strV == "no" || strV == "NO" || strV == "nO") {
+			cout.setstate(std::ios_base::failbit);
+		}
+	}
+	
+	string algorithm = string(argv[4]);
 	vector< pair<int,int> > keyframes = extractKeyframes(kfPath);
 	
-	if(!verbose) {
-		cout.setstate(std::ios_base::failbit);
+	if(algorithm == "slt" || algorithm == "SLT") {
+		SimpleLateFusion slf(vPath, vDicSize, aDicSize, keyframes, auralDescriptorsFolder, tempFiles);
+		slf.execute();
+	} else {
+		if(algorithm == "sef" || algorithm == "SEF") {
+			//TODO!
+		} else {
+			cout << "Algorithm '" << algorithm << "' not found!" << endl;
+		}
 	}
-	
-	
-	int vDicSize = 500;
-	int aDicSize = 50;
-	
-	SimpleLateFusion slf(vPath, vDicSize, aDicSize, keyframes, auralDescriptorsFolder, generateTempFiles);
-	slf.execute();
-	/*
-	SimpleLateFusion slf(vPath, 500, 500, keyframes);
-	
-	vector<int> desiredFrames;
 	
 
-	for(pair<int,int> kf : keyframes) {
-		desiredFrames.push_back(kf.second);
-	}
-	
-	SiftExtractor sift(vPath, nThreads, desiredFrames);
-	sift.extract();
-	
-	vector<Mat> visualDescriptors = sift.getDescriptors();		
-	Mat visualDictionary = Utils::kmeansClustering(visualDescriptors, visualDictionarySize);
-*/
 }

@@ -57,6 +57,15 @@ bool Utils::checkFile(string name) {
 	return false;
 }
 
+bool Utils::checkFolder(string name) {
+	struct stat info;
+	
+	if(stat(name.c_str(), &info) == 0 && (info.st_mode & S_IFDIR)) {
+		return true;
+	} 
+	return false;
+}
+
 bool Utils::pairCompare(const pair<int,int> &a, const pair<int,int> &b) {
 	return (a.first < b.first || (a.first == b.first && a.second < b.second));
 }

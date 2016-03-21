@@ -16,9 +16,8 @@ A simple late fusion based algorithm built upon Bag of Features dictionaries for
 TODO
 
 # Caveats
-1. To data, the MD5 algorithm requires a lot of RAM.
-2. This program may require a high amount of available memory. Typical values range from 2GB to 4GB for a 2h length 480p video.
-2. The program' memory consumption is directly linked with the video length, resolution and number of keyframes. When facing memory problems, try to run with a smaller video with lower resolution or a fewer number of keyframes.
+1. This program may require a high amount of available memory. Typical values range from 2GB to 4GB for a 2h length 480p video.
+2. The program' memory consumption is directly related with the video length, resolution and number of keyframes. When facing memory problems, try to run with: a) a smaller video; b) at lower resolution; c) a fewer number of keyframes.
 		
 
 

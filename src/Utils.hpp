@@ -9,6 +9,7 @@
 #include <string>
 #include <fstream>
 #include <iomanip>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <cmath>
@@ -29,6 +30,7 @@ class Utils {
 		static Mat kmeansClustering(vector<Mat> descriptors, int nClusters);
 		static void writeOutputFile(string outFile, vector< pair<int,int> > csv);
 		static bool checkFile(string name);
+		static bool checkFolder(string name);
 		static vector< pair<int,int> > parseCSV(string filePath);
 		static void normalizePairs(vector< pair<int,int> > &pairs, int val);
 		static bool pairCompare(const pair<int,int> &a, const pair<int,int> &b);

@@ -17,7 +17,6 @@
 
 #include "SiftExtractor.hpp"
 #include "Utils.hpp"
-#include "MD5.hpp"
 
 using namespace std;
 using namespace cv;

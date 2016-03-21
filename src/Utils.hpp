@@ -8,12 +8,12 @@
 #include <sstream>
 #include <string>
 #include <fstream>
+#include <iomanip>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <cmath>
 #include <armadillo>
-
-#include "MD5.hpp"
+#include <openssl/md5.h>
 
 using namespace std;
 using namespace cv;

@@ -241,21 +241,26 @@ vector< vector<double> > Utils::parseCSVHistograms(string filePath) {
 }
 
 string Utils::calculateMD5(string file) {
-	ifstream inFile;
-	inFile.open (file, ios::binary | ios::in);
 	
-	inFile.seekg (0, ios::end);
-	long length = inFile.tellg();
-	inFile.seekg (0, ios::beg);
+	unsigned char buffer[MD5_DIGEST_LENGTH];	
+	FILE *f = fopen(file.c_str(),"rb");
+	MD5_CTX mdContext;
+	int bytes;
+	unsigned char data[4096];
+	MD5_Init (&mdContext);
+	while ((bytes = fread (data, 1, 4096, f)) != 0) {
+		MD5_Update (&mdContext, data, bytes);
+	}
+	MD5_Final (buffer,&mdContext);
+    fclose(f);
 	
-	char * fData = new char[length];
-	inFile.read(fData, length);
-	
-	string ret = md5(fData, length);
-	delete [] fData;
-	inFile.close();
-	
-	return ret;
+	stringstream ss;
+	ss << std::hex << std::setfill('0');
+	for (int i = 0; i < MD5_DIGEST_LENGTH; ++i)	{
+		ss << std::setw(2) << static_cast<unsigned>(buffer[i]);
+	}
+
+	return ss.str();
 }
 
 vector< vector< vector<double> > > Utils::histogramsConcat(vector< vector<double> > vHist, vector< vector<double> > aHist, vector< pair<int,int> > keyframes) {

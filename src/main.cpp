@@ -29,7 +29,8 @@ vector< pair<int,int> > extractKeyframes(string kfPath) {
 }
 
 int main(int argc, char* argv[]) {
-	string vPath = "/home/tiago/basevideos/doutorado_audio/iceage_puro_com_audio.mp4";
+	//string vPath = "/home/tiago/basevideos/doutorado_audio/iceage_puro_com_audio.mp4";
+	string vPath = "/home/tiago/basevideos/originais/BackFuture.mkv";
 	string kfPath = "/home/tiago/github/iceage_tomadas_novo.csv";
 	string auralDescriptorsFolder = "/home/tiago/basevideos/mfcc_iceage/";	
 	bool generateTempFiles = true;

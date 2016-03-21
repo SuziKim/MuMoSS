@@ -4,9 +4,9 @@ MuMoSS (**Mu**lti**Mo**dal **S**cene **S**egmentator) is a video scene segmentat
 # Requirements
 *	A C++11 compatible compiler, like gcc
 *	A functional OpenCV installation (version 2.4.x and above, SIFT suport is a must have!)
-*   	An appropriate set of CODECs (for video decoding)
+*   An appropriate set of CODECs (for video decoding)
 *	Armadillo library v6.600+ (Avaliable at http://arma.sourceforge.net/)
-*	
+*	libssl-dev (for its MD5 algorithm)
 
 # Supported algorithms
 ## Simple Late Fusion (*slf*)
@@ -16,9 +16,9 @@ A simple late fusion based algorithm built upon Bag of Features dictionaries for
 TODO
 
 # Caveats
-		1. The MD5 algorithm may requires a lot of RAM when the *generate temporary files* switch is on.
-		2. This program may require a high amount of available memory. Typical values range from 2GB to 4GB for a 2h length 480p video.
-		2. The program' memory consumption is directly linked with the video length, resolution and number of keyframes. When facing memory problems, try to run with a smaller video with lower resolution or a fewer number of keyframes.
+1. To data, the MD5 algorithm requires a lot of RAM.
+2. This program may require a high amount of available memory. Typical values range from 2GB to 4GB for a 2h length 480p video.
+2. The program' memory consumption is directly linked with the video length, resolution and number of keyframes. When facing memory problems, try to run with a smaller video with lower resolution or a fewer number of keyframes.
 		
 
 

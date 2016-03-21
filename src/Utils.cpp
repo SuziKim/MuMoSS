@@ -41,10 +41,10 @@ Mat Utils::kmeansClustering(vector<Mat> descriptors, int nClusters){
 	return dic;
 }
 
-void Utils::writeOutputFile(string outFile, vector< pair<int,int> > keyframes) {
+void Utils::writeOutputFile(string outFile, vector< pair<int,int> > csv) {
 	ofstream file (outFile.c_str());
-	for(int i = 0; i < keyframes.size(); i++) {
-		file << keyframes[i].first << "," << keyframes[i].second << endl;
+	for(int i = 0; i < csv.size(); i++) {
+		file << csv[i].first << "," << csv[i].second << endl;
 	}
 	file.close();
 }
@@ -55,14 +55,6 @@ bool Utils::checkFile(string name) {
 		return true;
 	}
 	return false;
-}
-
-bool Utils::checkOutputFile(string name) {
-	if(FILE *file = fopen(name.c_str(),"w")) {
-		fclose(file);
-		return true;
-	}
-	return false;	
 }
 
 bool Utils::pairCompare(const pair<int,int> &a, const pair<int,int> &b) {
@@ -155,7 +147,22 @@ double Utils::euclideanDistance(Mat d1, Mat d2) {
 	return sqrt(distance);
 }
 
+double Utils::euclideanDistance(vector<double> d1, vector<double> d2) {
+	double distance = 0.0;
+	for(int i = 0; i < d1.size(); i++) {
+		distance = distance + pow(d1[i] - d2[i],2);
+	}	
+	return sqrt(distance);
+}
+
 void Utils::extractBoFHistogram(vector<double> &histogram, Mat &descriptor, Mat &dictionary) {
+	/* Used when the keyframe does not contain any keypoint */
+	if(descriptor.cols == 0) {
+		for(int i = 0; i < dictionary.rows; i++) {
+			histogram.push_back(1.0/dictionary.rows);
+		}
+		return;
+	}
 	if(descriptor.cols != dictionary.cols) {
 		cout.clear();
 		cout << "ERROR! The BoF dictionary and the descriptors should have the same size!" << endl;
@@ -251,3 +258,58 @@ string Utils::calculateMD5(string file) {
 	return ret;
 }
 
+vector< vector< vector<double> > > Utils::histogramsConcat(vector< vector<double> > vHist, vector< vector<double> > aHist, vector< pair<int,int> > keyframes) {
+	/* Each shot may have multiple descriptors */
+	vector< vector< vector<double> > > shots(keyframes.back().first + 1);
+	
+	for(int i = 0; i < keyframes.size(); i++) {
+		int shot = keyframes[i].first;
+		
+		vHist[i].insert(vHist[i].end(), aHist[shot].begin(), aHist[shot].end());
+		shots[shot].push_back(vHist[i]);
+	}
+	
+	return shots;
+}
+
+vector< pair<int,int> > Utils::sceneSegmentation(int windowsSize, double simFactor, vector< vector< vector<double> > > shots, vector< pair<int,int> > keyframes) {
+	vector<double> similarity;
+	similarity.push_back(0.0);
+	
+	for(int i = 1; i < shots.size(); i++) {		
+		double minDistance = std::numeric_limits<double>::infinity();
+		for(int j = i - windowsSize; j < i; j++) {
+			if(j < 0) {
+				continue;
+			}
+			minDistance = std::min(minDistance, Utils::minEuclideanDistance(shots[i], shots[j]));
+		}	
+		similarity.push_back(minDistance);
+	}
+	
+	vector< pair<int,int> > scenes;
+	int initial = 0;
+	
+	double realFactor = 1.0 - simFactor;
+	for(int i = 1; i < similarity.size()-1; i++) {
+		if(similarity[i-1]*realFactor >= similarity[i] && similarity[i+1]*realFactor >= similarity[i]) {
+			scenes.push_back(make_pair(initial,i-1));
+			initial = i;
+		}
+	}
+	scenes.push_back(make_pair(initial,similarity.size()));
+		
+	return scenes;
+		
+}
+
+double Utils::minEuclideanDistance(vector< vector<double> > h1, vector< vector<double> > h2) {
+	double dist = std::numeric_limits<double>::infinity();
+	
+	for(int i = 0; i < h1.size(); i++) {
+		for(int j = 0; j < h2.size(); j++) {
+			dist = std::min(dist, Utils::euclideanDistance(h1[i],h2[j]));
+		}
+	}
+	return dist;
+}

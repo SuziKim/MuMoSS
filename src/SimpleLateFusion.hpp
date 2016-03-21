@@ -32,6 +32,7 @@ class SimpleLateFusion {
 		
 		vector<Mat> parseAuralDescriptors();
 		vector< vector<double> > createHistograms(vector<Mat> descriptors, Mat dictionary);
+		vector< vector< vector<double> > > histogramsFusion(vector< vector<double> > vHist, vector< vector<double> > aHist, vector< pair<int,int> > keyframes);
 		
 	public:
 		SimpleLateFusion(string videoPath, int vDicSize, int aDicSize, vector< pair<int,int> > keyframes, string aDescFolder, bool tempFiles);	

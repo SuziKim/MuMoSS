@@ -24,11 +24,20 @@ void SimpleLateFusion::execute() {
 	unsigned nThreads = thread::hardware_concurrency();
 	cout << "Running some tasks with " << to_string(nThreads) << " threads" << endl;
 			
-	cout << "Extracting visual SIFT descriptors" << endl;
-	SiftExtractor sift(this->videoPath, nThreads, desiredFrames);
-	sift.extract();	
-	vector<Mat> visualDescriptors = sift.getDescriptors();
-	
+			
+	vector<Mat> visualDescriptors;	
+	/* If there is a visual dictionary and histogram, there is't the need to extract the visual descriptors! */
+	if(this->tempFiles &&
+		Utils::checkFile(baseFile + "_slf_visual_histogram_" + to_string(this->vDicSize) + ".csv") &&
+	 	Utils::checkFile(baseFile + "_slf_visual_dictionary_" + to_string(this->vDicSize) + ".csv")) {			 
+		cout << "Visual dictionary and histograms found. Skipping visual descriptors extraction." << endl;
+	} else {
+		cout << "Extracting visual SIFT descriptors" << endl;
+		SiftExtractor sift(this->videoPath, nThreads, desiredFrames);
+		sift.extract();	
+		visualDescriptors = sift.getDescriptors();	
+	}
+		
 	/* Visual Dictionary block */
 	Mat visualDictionary;
 	future<Mat> fVisualDic;
@@ -122,7 +131,24 @@ void SimpleLateFusion::execute() {
 		}
 	}
 	
-	/* */
+	cout << "Performing multimodal fusion" << endl;
+	vector< vector< vector<double> > > shots = Utils::histogramsConcat(visualHistogram, auralHistogram, this->keyframes);
+	
+	cout << "Scene segmentation" << endl;
+	/* TODO: Make the windowSize and simFactor as args */
+	vector< pair<int,int> > scenes = Utils::sceneSegmentation(10, 0.2, shots, this->keyframes);
+	Utils::normalizePairs(scenes,1);
+	
+	
+	cout << "Writing scene segmentation" << endl;
+	string outFile = baseFile + "_slf_scene_segmentation_v" + to_string(this->vDicSize) + "_a" + to_string(this->aDicSize) + ".csv";
+	if(Utils::checkFile(outFile)) {
+		std::remove(outFile.c_str());
+	}
+	
+	Utils::writeOutputFile(outFile, scenes);	
+	
+	
 }
 
 vector< vector<double> > SimpleLateFusion::createHistograms(vector<Mat> descriptors, Mat dictionary) {

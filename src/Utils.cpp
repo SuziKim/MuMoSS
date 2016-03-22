@@ -41,31 +41,6 @@ Mat Utils::kmeansClustering(vector<Mat> descriptors, int nClusters){
 	return dic;
 }
 
-void Utils::writeOutputFile(string outFile, vector< pair<int,int> > csv) {
-	ofstream file (outFile.c_str());
-	for(int i = 0; i < csv.size(); i++) {
-		file << csv[i].first << "," << csv[i].second << endl;
-	}
-	file.close();
-}
-
-bool Utils::checkFile(string name) {
-  	if(FILE *file = fopen(name.c_str(),"r")) {
-		fclose(file);
-		return true;
-	}
-	return false;
-}
-
-bool Utils::checkFolder(string name) {
-	struct stat info;
-	
-	if(stat(name.c_str(), &info) == 0 && (info.st_mode & S_IFDIR)) {
-		return true;
-	} 
-	return false;
-}
-
 bool Utils::pairCompare(const pair<int,int> &a, const pair<int,int> &b) {
 	return (a.first < b.first || (a.first == b.first && a.second < b.second));
 }
@@ -75,77 +50,6 @@ void Utils::normalizePairs(vector< pair<int,int> > &pairs, int val) {
 		pairs[i].first = pairs[i].first + val;
 		pairs[i].second = pairs[i].second + val;
 	}
-}
-
-vector< pair<int,int> > Utils::parseCSV(string filePath) {
-	ifstream file(filePath.c_str());
-	string line;
-	string token;
-	vector< pair<int,int> > ret;
-	
-	if(file.is_open()) {
-		while(getline(file,line)) {
-			istringstream str(line);
-			vector<int> temp;
-			while(getline(str,token,',')) {
-				temp.push_back(atoi(token.c_str()));
-			}
-			ret.push_back(make_pair(temp[0],temp[1]));
-			temp.clear();
-		}
-	}	
-    	file.close();
-	return ret;
-}
-
-vector<Mat> Utils::parseAuralDescriptors(string folder) {
-	if(folder.back() != '/') {
-		folder = folder + "/";
-	}
-	vector<Mat> ret;
-	int base = 1;
-	if(Utils::checkFile(folder + "audio_0.sift")) {
-		base = 0;
-	}
-	
-	while(true) {
-		string fTemp = folder + "audio_" + to_string(base);
-		if(!Utils::checkFile(fTemp)) {
-			break;
-		}
-		ret.push_back(Utils::parseCSVDescriptor(fTemp));		
-		base++;
-	}
-	return ret;
-}
-
-Mat Utils::parseCSVDescriptor(string filePath) {
-	ifstream file(filePath.c_str());
-	string line;
-	string token;
-	vector< vector<float> > values;
-	
-	if(file.is_open()) {
-		while(getline(file,line)) {
-			istringstream str(line);
-			vector<float> temp;
-			while(getline(str,token,',')) {
-				temp.push_back(atof(token.c_str()));
-			}
-			values.push_back(temp);
-			temp.clear();
-		}
-	}	
-    	file.close();
-    	
-    	Mat ret(values.size(),values[0].size(), CV_32F);
-    	for(int i = 0; i < values.size(); i++) {
-    		for(int j = 0; j < values[i].size(); j++) {
-    			ret.at<float>(i,j) = values[i][j];
-    		}
-    	}
-    	
-	return ret;
 }
 
 double Utils::euclideanDistance(Mat d1, Mat d2) {
@@ -203,75 +107,6 @@ void Utils::extractBoFHistogram(vector<double> &histogram, Mat &descriptor, Mat 
 	}
 }
 
-void Utils::writeCSVMat(string file, Mat data) {
-	ofstream f(file.c_str());
-	for(int i = 0; i < data.rows; i++) {
-		f << data.at<float>(i,0);
-		for(int j = 1; j < data.cols; j++) {
-			f << "," << data.at<float>(i,j);
-		}
-		f << endl;
-	}
-	f.close();
-}
-
-void Utils::writeCSVVector(string file, vector< vector<double> > data) {
-	ofstream f(file.c_str());
-	for(int i = 0; i < data.size(); i++) {
-		f << data[i][0];
-		for(int j = 1; j < data[i].size(); j++) {
-			f << "," << data[i][j];
-		}
-		f << endl;
-	}
-	f.close();
-}
-
-vector< vector<double> > Utils::parseCSVHistograms(string filePath) {
-	ifstream file(filePath.c_str());
-	string line;
-	string token;
-	vector< vector<double> > values;
-	
-	if(file.is_open()) {
-		while(getline(file,line)) {
-			istringstream str(line);
-			vector<double> temp;
-			while(getline(str,token,',')) {
-				temp.push_back(atof(token.c_str()));
-			}
-			values.push_back(temp);
-			temp.clear();
-		}
-	}	
-    	file.close();
-    	
-	return values;
-}
-
-string Utils::calculateMD5(string file) {
-	
-	unsigned char buffer[MD5_DIGEST_LENGTH];	
-	FILE *f = fopen(file.c_str(),"rb");
-	MD5_CTX mdContext;
-	int bytes;
-	unsigned char data[4096];
-	MD5_Init (&mdContext);
-	while ((bytes = fread (data, 1, 4096, f)) != 0) {
-		MD5_Update (&mdContext, data, bytes);
-	}
-	MD5_Final (buffer,&mdContext);
-    fclose(f);
-	
-	stringstream ss;
-	ss << std::hex << std::setfill('0');
-	for (int i = 0; i < MD5_DIGEST_LENGTH; ++i)	{
-		ss << std::setw(2) << static_cast<unsigned>(buffer[i]);
-	}
-
-	return ss.str();
-}
-
 vector< vector< vector<double> > > Utils::histogramsConcat(vector< vector<double> > vHist, vector< vector<double> > aHist, vector< pair<int,int> > keyframes) {
 	/* Each shot may have multiple descriptors */
 	vector< vector< vector<double> > > shots(keyframes.back().first + 1);
@@ -306,7 +141,6 @@ vector< vector< vector<double> > > Utils::generateShotsFromHistogram(vector< vec
 	
 	return shots;
 }
-
 
 vector< pair<int,int> > Utils::sceneSegmentation(int windowsSize, double simFactor, vector< vector< vector<double> > > shots, vector< pair<int,int> > keyframes) {
 	vector<double> similarity;

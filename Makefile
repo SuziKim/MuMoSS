@@ -6,6 +6,9 @@ all: MuMoSS
 Utils.o: src/Utils.cpp src/Utils.hpp
 	@$(CC) -o $@ -c src/Utils.cpp 
 	
+InputOutput.o: src/InputOutput.cpp src/InputOutput.hpp
+	@$(CC) -o $@ -c src/InputOutput.cpp 
+	
 SiftExtractor.o: src/SiftExtractor.cpp src/SiftExtractor.hpp
 	@$(CC) -o $@ -c src/SiftExtractor.cpp
 	
@@ -15,8 +18,8 @@ SimpleLateFusion.o: src/SimpleLateFusion.cpp src/SimpleLateFusion.hpp
 SimpleEarlyFusion.o: src/SimpleEarlyFusion.cpp src/SimpleEarlyFusion.hpp
 	@$(CC) -o $@ -c src/SimpleEarlyFusion.cpp
 	
-MuMoSS: Utils.o SiftExtractor.o SimpleLateFusion.o SimpleEarlyFusion.o
-	@$(CC) src/main.cpp SiftExtractor.o Utils.o SimpleLateFusion.o SimpleEarlyFusion.o -o $@ $(LIBS)
+MuMoSS: Utils.o SiftExtractor.o SimpleLateFusion.o SimpleEarlyFusion.o InputOutput.o
+	@$(CC) src/main.cpp SiftExtractor.o Utils.o SimpleLateFusion.o SimpleEarlyFusion.o InputOutput.o -o $@ $(LIBS)
 
 clean:
 	@rm -f MuMoSS src/*.o *.o

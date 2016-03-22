@@ -13,13 +13,14 @@
 #include "SimpleLateFusion.hpp"
 #include "SimpleEarlyFusion.hpp"
 #include "SiftExtractor.hpp"
+#include "InputOutput.hpp"
 
 using namespace std;
 using namespace cv;
 
 
 vector< pair<int,int> > extractKeyframes(string kfPath) {
-	vector< pair<int,int> > keyframes = Utils::parseCSV(kfPath);
+	vector< pair<int,int> > keyframes = InputOutput::parseCSV(kfPath);
 	sort(keyframes.begin(),keyframes.end(),Utils::pairCompare);
 	//Check if the first shot is "0". If it's not, make it so...
 	if(keyframes[0].first > 0) {
@@ -33,26 +34,26 @@ int main(int argc, char* argv[]) {
 	
 	if(argc < 7 || argc > 9) {
 		cout << "Incorrect parameter count." << endl;
-		cout << "./MuMoSS <videoFilePath> <keyframesFilePath.csv> <auralDescriptorsFolder> <algorithm> <visualDictionarySize> <auralDictionarySize> [<useTemporaryFiles> <verbose>]" << endl;
+		cout << "./MuMoSS <videoFilePath> <keyframesFilePath> <auralDescriptorsFolder> <algorithm> <visualDictionarySize> <auralDictionarySize> [<useTemporaryFiles> <verbose>]" << endl;
 		cout << "Example: " << endl;
 		cout << "./MuMoSS video.avi keyframes.csv audio_features/ slf 100 25 yes no" << endl;
 		return 1;
 	}
 	
 	string vPath = string(argv[1]);
-	if(!Utils::checkFile(vPath)) {
+	if(!InputOutput::checkFile(vPath)) {
 		cout << "The videoFilePath seems to be invalid or cannot be read" << endl;
 		return 1;
 	}
 	
 	string kfPath = string(argv[2]);
-	if(!Utils::checkFile(kfPath)) {
+	if(!InputOutput::checkFile(kfPath)) {
 		cout << "The keyframesFilePath seems to be invalid or cannot be read" << endl;
 		return 1;
 	}
 	
 	string auralDescriptorsFolder = string(argv[3]);
-	if(!Utils::checkFolder(auralDescriptorsFolder)) {
+	if(!InputOutput::checkFolder(auralDescriptorsFolder)) {
 		cout << "The auralDescriptorsFolder could not be found" << endl;
 		return 1;
 	}

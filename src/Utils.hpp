@@ -28,20 +28,15 @@ class Utils {
 		static void extractBoFHistogram(vector<double> &histogram, Mat &descriptor, Mat &dictionary);
 		
 	public:
+		/* Clustering */
 		static Mat ArmadilloKmeansClustering(vector<Mat> descriptors, int nClusters);
 		static Mat kmeansClustering(vector<Mat> descriptors, int nClusters);
-		static void writeOutputFile(string outFile, vector< pair<int,int> > csv);
-		static bool checkFile(string name);
-		static bool checkFolder(string name);
-		static vector< pair<int,int> > parseCSV(string filePath);
+		
+		/* Pair utils */
 		static void normalizePairs(vector< pair<int,int> > &pairs, int val);
 		static bool pairCompare(const pair<int,int> &a, const pair<int,int> &b);
-		static Mat parseCSVDescriptor(string filePath);
-		static vector<Mat> parseAuralDescriptors(string folder);		
-		static void writeCSVMat(string file, Mat data);
-		static void writeCSVVector(string file, vector< vector<double> > data);
-		static string calculateMD5(string file);
-		static vector< vector<double> > parseCSVHistograms(string filePath);
+	
+		/* Segmentation */
 		static vector< vector< vector<double> > > histogramsConcat(vector< vector<double> > vHist, vector< vector<double> > aHist, vector< pair<int,int> > keyframes);
 		static vector< pair<int,int> > sceneSegmentation(int windowsSize, double simFactor, vector< vector< vector<double> > > shots, vector< pair<int,int> > keyframes);	
 		static vector< vector< vector<double> > > generateShotsFromHistogram(vector< vector<double> > hist, vector< pair<int,int> > keyframes);

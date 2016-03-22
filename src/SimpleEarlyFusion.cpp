@@ -12,7 +12,7 @@ SimpleEarlyFusion::SimpleEarlyFusion(string videoPath, int vDicSize, int aDicSiz
 void SimpleEarlyFusion::execute() {
 	string baseFile = "";
 	if(this->tempFiles) {
-		baseFile = Utils::calculateMD5(this->videoPath);
+		baseFile = InputOutput::calculateMD5(this->videoPath);
 		cout << "The video file MD5 is '" << baseFile << "'" << endl;
 	}
 	
@@ -28,8 +28,8 @@ void SimpleEarlyFusion::execute() {
 	vector<Mat> visualDescriptors;	
 	/* If there is a visual dictionary and histogram, there is't the need to extract the visual descriptors! */
 	if(this->tempFiles &&
-		Utils::checkFile(baseFile + "_sef_visual_histogram_" + to_string(this->vDicSize) + ".csv") &&
-	 	Utils::checkFile(baseFile + "_sef_visual_dictionary_" + to_string(this->vDicSize) + ".csv")) {			 
+		InputOutput::checkFile(baseFile + "_sef_visual_histogram_" + to_string(this->vDicSize) + ".csv") &&
+	 	InputOutput::checkFile(baseFile + "_sef_visual_dictionary_" + to_string(this->vDicSize) + ".csv")) {			 
 		cout << "Visual dictionary and histograms found. Skipping visual descriptors extraction." << endl;
 	} else {
 		cout << "Extracting visual SIFT descriptors" << endl;
@@ -42,9 +42,9 @@ void SimpleEarlyFusion::execute() {
 	Mat visualDictionary;
 	future<Mat> fVisualDic;
 	bool vDicControl = false;	
-	if(this->tempFiles && Utils::checkFile(baseFile + "_sef_visual_dictionary_" + to_string(this->vDicSize) + ".csv")) {
+	if(this->tempFiles && InputOutput::checkFile(baseFile + "_sef_visual_dictionary_" + to_string(this->vDicSize) + ".csv")) {
 		cout << "Loading visual dictionary from file" << endl;
-		visualDictionary = Utils::parseCSVDescriptor(baseFile + "_sef_visual_dictionary_" + to_string(this->vDicSize) + ".csv");
+		visualDictionary = InputOutput::parseCSVDescriptor(baseFile + "_sef_visual_dictionary_" + to_string(this->vDicSize) + ".csv");
 	} else {
 		cout << "Creating visual dictionary" << endl;
 		fVisualDic = std::async(&Utils::ArmadilloKmeansClustering, visualDescriptors, this->vDicSize);
@@ -52,13 +52,13 @@ void SimpleEarlyFusion::execute() {
 	}	
 	
 	/* Aural Dictionary block */
-	vector<Mat> auralDescriptors = Utils::parseAuralDescriptors(this->aDescFolder);	
+	vector<Mat> auralDescriptors = InputOutput::parseAuralDescriptors(this->aDescFolder);	
 	future<Mat> fAuralDic;	
 	Mat auralDictionary;
 	bool aDicControl = false;	
-	if(this->tempFiles && Utils::checkFile(baseFile + "_sef_aural_dictionary_" + to_string(this->aDicSize) + ".csv")) {
+	if(this->tempFiles && InputOutput::checkFile(baseFile + "_sef_aural_dictionary_" + to_string(this->aDicSize) + ".csv")) {
 		cout << "Loading aural dictionary from file" << endl;
-		auralDictionary = Utils::parseCSVDescriptor(baseFile + "_sef_aural_dictionary_" + to_string(this->aDicSize) + ".csv");
+		auralDictionary = InputOutput::parseCSVDescriptor(baseFile + "_sef_aural_dictionary_" + to_string(this->aDicSize) + ".csv");
 	} else {
 		cout << "Creating aural dictionary" << endl;
 		fAuralDic = std::async(&Utils::ArmadilloKmeansClustering, auralDescriptors, this->aDicSize);
@@ -71,7 +71,7 @@ void SimpleEarlyFusion::execute() {
 		cout << "Aural dictionary successfully created" << endl;		
 		if(this->tempFiles) {
 			cout << "Salving aural dictionary into a file" << endl;
-			Utils::writeCSVMat(baseFile + "_sef_aural_dictionary_" + to_string(this->aDicSize) + ".csv", auralDictionary);
+			InputOutput::writeCSV(baseFile + "_sef_aural_dictionary_" + to_string(this->aDicSize) + ".csv", auralDictionary);
 		}		
 	}
 		
@@ -79,9 +79,9 @@ void SimpleEarlyFusion::execute() {
 	future< vector< vector<double> > > fAuralHist;
 	vector< vector<double> > auralHistogram;
 	bool aHistControl = false;
-	if(this->tempFiles && Utils::checkFile(baseFile + "_sef_aural_histogram_" + to_string(this->aDicSize) + ".csv")) {
+	if(this->tempFiles && InputOutput::checkFile(baseFile + "_sef_aural_histogram_" + to_string(this->aDicSize) + ".csv")) {
 		cout << "Loading aural histograms' from file" << endl;
-		auralHistogram = Utils::parseCSVHistograms(baseFile + "_sef_aural_histogram_" + to_string(this->aDicSize) + ".csv");
+		auralHistogram = InputOutput::parseCSVHistograms(baseFile + "_sef_aural_histogram_" + to_string(this->aDicSize) + ".csv");
 	} else {
 		cout << "Creating aural histograms'" << endl;
 		fAuralHist = std::async(&Utils::createHistogramsFromDescriptors, auralDescriptors, auralDictionary);
@@ -94,7 +94,7 @@ void SimpleEarlyFusion::execute() {
 		cout << "Visual dictionary successfully created" << endl;	
 		if(this->tempFiles) {
 			cout << "Salving visual dictionary into a file" << endl;
-			Utils::writeCSVMat(baseFile + "_sef_visual_dictionary_" + to_string(this->vDicSize) + ".csv", visualDictionary);
+			InputOutput::writeCSV(baseFile + "_sef_visual_dictionary_" + to_string(this->vDicSize) + ".csv", visualDictionary);
 		}	
 	}
 	
@@ -104,7 +104,7 @@ void SimpleEarlyFusion::execute() {
 		cout << "Aural histogram successfully created" << endl;	
 		if(this->tempFiles) {
 			cout << "Salving aural histograms' into a file" << endl;
-			Utils::writeCSVVector(baseFile + "_sef_aural_histogram_" + to_string(this->aDicSize) + ".csv", auralHistogram);
+			InputOutput::writeCSV(baseFile + "_sef_aural_histogram_" + to_string(this->aDicSize) + ".csv", auralHistogram);
 		}		
 	}
 	
@@ -112,9 +112,9 @@ void SimpleEarlyFusion::execute() {
 	future< vector< vector<double> > > fVisualHist;
 	vector< vector<double> > visualHistogram;
 	bool vHistControl = false;
-	if(this->tempFiles && Utils::checkFile(baseFile + "_sef_visual_histogram_" + to_string(this->vDicSize) + ".csv")) {
+	if(this->tempFiles && InputOutput::checkFile(baseFile + "_sef_visual_histogram_" + to_string(this->vDicSize) + ".csv")) {
 		cout << "Loading visual histograms' from file" << endl;
-		visualHistogram = Utils::parseCSVHistograms(baseFile + "_sef_visual_histogram_" + to_string(this->vDicSize) + ".csv");
+		visualHistogram = InputOutput::parseCSVHistograms(baseFile + "_sef_visual_histogram_" + to_string(this->vDicSize) + ".csv");
 	} else {
 		cout << "Creating visual histograms'" << endl;
 		fVisualHist = std::async(&Utils::createHistogramsFromDescriptors, visualDescriptors, visualDictionary);
@@ -127,7 +127,7 @@ void SimpleEarlyFusion::execute() {
 		cout << "Visual histogram successfully created" << endl;	
 		if(this->tempFiles) {
 			cout << "Salving visual histograms' into a file" << endl;
-			Utils::writeCSVVector(baseFile + "_sef_visual_histogram_" + to_string(this->vDicSize) + ".csv", visualHistogram);
+			InputOutput::writeCSV(baseFile + "_sef_visual_histogram_" + to_string(this->vDicSize) + ".csv", visualHistogram);
 		}
 	}
 	
@@ -142,11 +142,11 @@ void SimpleEarlyFusion::execute() {
 	
 	cout << "Writing scene segmentation" << endl;
 	string outFile = baseFile + "_sef_scene_segmentation_v" + to_string(this->vDicSize) + "_a" + to_string(this->aDicSize) + ".csv";
-	if(Utils::checkFile(outFile)) {
+	if(InputOutput::checkFile(outFile)) {
 		std::remove(outFile.c_str());
 	}
 	
-	Utils::writeOutputFile(outFile, scenes);	
+	InputOutput::writeCSV(outFile, scenes);	
 }
 
 

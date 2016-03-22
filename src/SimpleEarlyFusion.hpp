@@ -17,6 +17,7 @@
 
 #include "SiftExtractor.hpp"
 #include "Utils.hpp"
+#include "InputOutput.hpp"
 
 using namespace std;
 using namespace cv;

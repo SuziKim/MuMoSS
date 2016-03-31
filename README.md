@@ -22,12 +22,14 @@ MuMoSS (**Mu**lti**Mo**dal **S**cene **S**egmentator) is a video scene segmentat
 
 # Supported algorithms
 ## Simple Late Fusion (*slf*)
-A simple late fusion based algorithm built upon Bag of Features dictionaries for both aural and visual features. After the dictionaries' are created with the specified size, a histogram are estimated for each keyframe/shot based on nearest neighbor method. The histograms are used to calculate the dissimilarity of adjacent shots and, if a similarity valley are found, a scene transition is detected.
+A late fusion based algorithm built upon Bag of Features dictionaries for both aural and visual features. After the dictionaries are created with the specified size, a histogram are estimated for each keyframe/shot based on nearest neighbor method. The histograms are used to calculate the dissimilarity of adjacent shots and, if a similarity valley are found, a scene transition is detected.
 
 ## Simple Early Fusion (*sef*)
-TODO
+This early fusion based algorithm is identical to the Simple Late Fusion (sfl) till the aural and visual features histograms are created. 
+These histograms are now merged together using a concatenation method where the aural histogram is cloned to all the keyframes of each particular shot. 
+After the merging procedure, the *multimodal histograms* are used to perform the scene segmentation (identical to those applied in the *slf* individual modality segmentation).
 
 # Caveats
 1. This program may require a high amount of available memory. Typical values range from 2GB to 4GB for a 2h length 480p video.
-2. The program' memory consumption is directly related with the video length, resolution and number of keyframes. When facing memory problems, try to run with: a) a smaller video; b) at lower resolution; c) a fewer number of keyframes.
+2. The program' memory consumption is directly related with the video length, resolution and number of keyframes. When facing memory problems, try to run with: a) a low resolution video; b) a video with loe duration; c) a fewer number of keyframes.
 		

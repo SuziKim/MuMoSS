@@ -61,7 +61,9 @@ void SiftExtractor::extract() {
 				}
 				pool.clear();
 			}
-			pool.push_back(thread(&SiftExtractor::extractSift,this,std::ref(this->siftDescriptors[frameIndex]),frame));
+			Mat t = Mat()
+			frame.copyTo(t);
+			pool.push_back(thread(&SiftExtractor::extractSift,this,std::ref(this->siftDescriptors[frameIndex]),t));
 			frameIndex++;
 		}
 		fNum++;

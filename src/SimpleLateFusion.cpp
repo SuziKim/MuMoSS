@@ -142,6 +142,8 @@ void SimpleLateFusion::execute() {
 	
 	cout << "Perfoming multimodal late fusion" << endl;	
 	vector< pair<int,int> > scenes = this->scenesFusion(visualScenes, auralScenes);
+	/* The last scene should end at the last shot */
+	scenes.back().second = this->keyframes.back().first;	
 	Utils::normalizePairs(scenes,1);
 	
 	cout << "Writing scene segmentation" << endl;

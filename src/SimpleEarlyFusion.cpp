@@ -137,6 +137,8 @@ void SimpleEarlyFusion::execute() {
 	cout << "Performing scene segmentation" << endl;
 	/* TODO: Make the windowSize and simFactor as args */
 	vector< pair<int,int> > scenes = Utils::sceneSegmentation(10, 0.2, shots, this->keyframes);
+	/* The last scene should end at the last shot */
+	scenes.back().second = this->keyframes.back().first;
 	Utils::normalizePairs(scenes,1);
 	
 	

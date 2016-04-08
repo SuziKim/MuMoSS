@@ -1,4 +1,4 @@
-CPPFLAGS := -O2 -g -std=c++11 -pthread -Wl,--no-as-needed -larmadillo -fopenmp -lssl -lcrypto
+CPPFLAGS := -O2 -std=c++11 -pthread -Wl,--no-as-needed -larmadillo -fopenmp -lssl -lcrypto
 LDLIBS := `pkg-config --libs --cflags opencv`
 OBJS = Utils.o InputOutput.o SiftExtractor.o SimpleLateFusion.o SimpleEarlyFusion.o
 PROG = MuMoSS

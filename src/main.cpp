@@ -30,6 +30,21 @@ vector< pair<int,int> > extractKeyframes(string kfPath) {
 	return keyframes;
 }
 
+bool isKeyFramesValid(vector< pair<int,int> > kf) {
+	int shots = kf.back().first;
+	bool ret = true;
+	
+	for(int i = 0; i < shots; i++) {
+		for(pair<int, int> p : kf) {
+			if(p.first == i) {
+				break;
+			}
+		}
+		ret = false;
+	}
+	return ret;
+}
+
 int main(int argc, char* argv[]) {
 	
 	if(argc < 7 || argc > 9) {
@@ -86,6 +101,13 @@ int main(int argc, char* argv[]) {
 	
 	string algorithm = string(argv[4]);
 	vector< pair<int,int> > keyframes = extractKeyframes(kfPath);
+	/* Check if there is a keyframe for each shot */
+	if(!isKeyFramesValid(keyframes)) {
+		cout.clear();
+		cout << "There seems to be some shots without a selected keyframe!" << endl;
+		return 1;
+	}
+	
 	
 	if(algorithm == "slf" || algorithm == "SLF") {
 		cout << "Running the Simple Late Fusion algorithm" << endl;

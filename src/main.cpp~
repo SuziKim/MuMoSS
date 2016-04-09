@@ -35,7 +35,7 @@ bool isKeyFramesValid(vector< pair<int,int> > kf) {
 	bool temp;
 	
 	for(int i = 0; i < shots; i++) {
-		bool temp = false;
+		bool temp = false
 		for(pair<int, int> p : kf) {
 			if(p.first == i) {
 				temp = true;

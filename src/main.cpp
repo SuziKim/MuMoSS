@@ -32,17 +32,21 @@ vector< pair<int,int> > extractKeyframes(string kfPath) {
 
 bool isKeyFramesValid(vector< pair<int,int> > kf) {
 	int shots = kf.back().first;
-	bool ret = true;
+	bool temp;
 	
 	for(int i = 0; i < shots; i++) {
+		bool temp = false
 		for(pair<int, int> p : kf) {
 			if(p.first == i) {
+				temp = true;
 				break;
 			}
 		}
-		ret = false;
+		if(!temp) {
+			return false;
+		}
 	}
-	return ret;
+	return true;
 }
 
 int main(int argc, char* argv[]) {

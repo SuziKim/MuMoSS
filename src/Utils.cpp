@@ -70,7 +70,7 @@ double Utils::euclideanDistance(vector<double> d1, vector<double> d2) {
 
 void Utils::extractBoFHistogram(vector<double> &histogram, Mat &descriptor, Mat &dictionary) {
 	/* Used when the keyframe does not contain any keypoint */
-	if(descriptor.cols == 0) {
+	if(descriptor.cols == 0 || descriptor.rows == 0) {
 		for(int i = 0; i < dictionary.rows; i++) {
 			histogram.push_back(1.0/dictionary.rows);
 		}
@@ -134,7 +134,7 @@ vector< vector< vector<double> > > Utils::generateShotsFromHistogram(vector< vec
 		/* Its an visual histogram */
 		cout << "Visual histogram" << endl;
 		for(int i = 0; i < keyframes.size(); i++) {
-			int shot = keyframes[i].first;			
+			int shot = keyframes[i].first;		
 			shots[shot].push_back(hist[i]);
 		} 
 	}
@@ -190,11 +190,10 @@ vector< vector<double> > Utils::createHistogramsFromDescriptors(vector<Mat> desc
 	
 	int index = 0;
 	unsigned nThreads = thread::hardware_concurrency();
-	
 	for(int i = 0; i < descriptors.size(); i++) {
 		if(pool.size() >= nThreads) {
-			for(int i = 0 ; i < pool.size(); i++) {
-				pool[i].join();
+			for(int j = 0 ; j < pool.size(); j++) {
+				pool[j].join();
 			}
 			pool.clear();
 		}

@@ -3,7 +3,7 @@ MuMoSS (**Mu**lti**Mo**dal **S**cene **S**egmentator) is a video scene segmentat
 
 # Requirements
 *	A C++11 compatible compiler, like gcc
-*	A functional OpenCV installation (version 2.4.x and above, SIFT suport is a must have!)
+*	A functional OpenCV installation (version 3.x and above, SIFT suport is a must have!)
 *   An appropriate set of CODECs (for video decoding)
 *	Armadillo library v6.600+ (Avaliable at http://arma.sourceforge.net/)
 *	libssl-dev (for its MD5 algorithm)

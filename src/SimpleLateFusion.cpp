@@ -123,7 +123,7 @@ void SimpleLateFusion::execute() {
 	
 	/* Visual Histogram saving block */
 	if(vHistControl) {
-		visualHistogram = fVisualHist.get();	
+		visualHistogram = fVisualHist.get();
 		cout << "Visual histogram successfully created" << endl;	
 		if(this->tempFiles) {
 			cout << "Salving visual histograms' into a file" << endl;

@@ -1,10 +1,11 @@
 #ifndef SIFTEXTRACTOR_H
 #define SIFTEXTRACTOR_H
 
-#include "opencv2/core/core.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/nonfree/features2d.hpp"
+#include "opencv2/core.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/highgui.hpp"
+#include "opencv2/features2d.hpp"
+#include "opencv2/xfeatures2d.hpp"
 #include <utility>
 #include <algorithm>
 #include <iostream>
@@ -14,6 +15,7 @@
 
 using namespace std;
 using namespace cv;
+using namespace cv::xfeatures2d;
 
 class SiftExtractor {
 	private:

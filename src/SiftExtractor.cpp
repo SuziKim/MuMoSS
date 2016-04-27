@@ -21,13 +21,12 @@ vector<Mat> SiftExtractor::getDescriptors() {
 void SiftExtractor::extractSift(Mat &out, Mat frame) {
 	Mat gray;	
 	
-	SiftFeatureDetector detector;
-	SiftDescriptorExtractor extractor;	
+	Ptr<Feature2D> sift = SIFT::create();
 	vector<KeyPoint> kp;
 	
 	cvtColor(frame,gray,CV_BGR2GRAY);
-	detector.detect(gray,kp);
-	extractor.compute(gray,kp,out);
+	sift->detect(gray,kp);
+	sift->compute(gray,kp,out);
 	
 	frame.release();
 	gray.release();

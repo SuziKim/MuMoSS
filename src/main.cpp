@@ -4,10 +4,6 @@
 #include <fstream>
 #include <utility>
 #include <algorithm>
-#include <thread>
-#include "opencv2/core/core.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/highgui/highgui.hpp"
 
 #include "Utils.hpp"
 #include "SimpleLateFusion.hpp"

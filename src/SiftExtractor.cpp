@@ -1,17 +1,12 @@
 #include "SiftExtractor.hpp"
 
-SiftExtractor::SiftExtractor(string videoPath, int numThreads, vector<int> desiredFrames) {
+SiftExtractor::SiftExtractor(string videoPath, vector<int> desiredFrames) {
 	this->videoPath = videoPath;
 	this->desiredFrames = desiredFrames;
 	for(int i = 0; i < desiredFrames.size(); i++) {
 		this->siftDescriptors.push_back(Mat());
-	}
-	if(numThreads <= 0) {
-		cout.clear();
-		cout << "SiftExtractor: The number of threads cannot be less than 1!" << endl;
-		exit(-1);
-	}
-	this->numThreads = numThreads;
+	}	
+	this->numThreads = thread::hardware_concurrency();
 }
 
 vector<Mat> SiftExtractor::getDescriptors() {

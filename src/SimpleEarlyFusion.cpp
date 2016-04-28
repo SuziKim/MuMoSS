@@ -24,7 +24,6 @@ void SimpleEarlyFusion::execute() {
 	unsigned nThreads = thread::hardware_concurrency();
 	cout << "Running some tasks with " << to_string(nThreads) << " threads" << endl;
 			
-			
 	vector<Mat> visualDescriptors;	
 	/* If there is a visual dictionary and histogram, there is't the need to extract the visual descriptors! */
 	if(this->tempFiles &&
@@ -33,7 +32,7 @@ void SimpleEarlyFusion::execute() {
 		cout << "Visual dictionary and histograms found. Skipping visual descriptors extraction." << endl;
 	} else {
 		cout << "Extracting visual SIFT descriptors" << endl;
-		SiftExtractor sift(this->videoPath, nThreads, desiredFrames);
+		SiftExtractor sift(this->videoPath, desiredFrames);
 		sift.extract();	
 		visualDescriptors = sift.getDescriptors();	
 	}

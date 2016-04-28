@@ -25,10 +25,9 @@ class SiftExtractor {
 		vector<Mat> siftDescriptors;
 		void extractSift(Mat &out, Mat frame);
 		
-
 	public:
 		vector<Mat> getDescriptors();
-		SiftExtractor(string videoPath, int numThreads, vector<int> desiredFrames);
+		SiftExtractor(string videoPath, vector<int> desiredFrames);
 		void extract();
 };
 

@@ -27,7 +27,6 @@ Mat Utils::ArmadilloKmeansClustering(vector<Mat> descriptors, int nClusters){
 			ret.at<float>(col,row) = result(row,col);
 		}
 	}
-
 	return ret;
 }
 

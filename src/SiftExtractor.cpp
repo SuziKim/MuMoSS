@@ -50,8 +50,8 @@ void SiftExtractor::extract() {
 			//There is enough running threads already?		
 			if(pool.size() >= numThreads) {
 				//There is! Wait then to complete...
-				for(int i = 0; i < numThreads; i++) {
-					pool[i].join();
+				for(auto &t : pool) {
+					t.join();
 				}
 				pool.clear();
 			}
@@ -62,8 +62,8 @@ void SiftExtractor::extract() {
 		}
 		fNum++;
 	}
-	for(int i = 0; i < pool.size(); i++) {
-		pool[i].join();
+	for(auto &t : pool) {
+		t.join();
 	}
 	pool.clear();
 	frame.release();

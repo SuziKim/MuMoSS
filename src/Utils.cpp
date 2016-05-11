@@ -191,16 +191,16 @@ vector< vector<double> > Utils::createHistogramsFromDescriptors(vector<Mat> desc
 	unsigned nThreads = thread::hardware_concurrency();
 	for(int i = 0; i < descriptors.size(); i++) {
 		if(pool.size() >= nThreads) {
-			for(int j = 0 ; j < pool.size(); j++) {
-				pool[j].join();
+			for(auto &t : pool) {
+				t.join();
 			}
 			pool.clear();
 		}
 		pool.push_back(thread(&Utils::extractBoFHistogram, std::ref(histograms[i]), std::ref(descriptors[i]), std::ref(dictionary)));
 	}
 	
-	for(int i = 0 ; i < pool.size(); i++) {
-		pool[i].join();
+	for(auto &t : pool) {
+		t.join();
 	}
 	
 	pool.clear();

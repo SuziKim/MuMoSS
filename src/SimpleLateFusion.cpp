@@ -79,7 +79,7 @@ void SimpleLateFusion::execute() {
 	vector< vector<double> > auralHistogram;
 	bool aHistControl = false;
 	if(this->tempFiles && InputOutput::checkFile(baseFile + "_slf_aural_histogram_" + to_string(this->aDicSize) + ".csv")) {
-		cout << "Loading aural histograms' from file" << endl;
+		cout << "Loading aural histograms from file" << endl;
 		auralHistogram = InputOutput::parseCSVHistograms(baseFile + "_slf_aural_histogram_" + to_string(this->aDicSize) + ".csv");
 	} else {
 		cout << "Creating aural histograms'" << endl;
@@ -102,7 +102,7 @@ void SimpleLateFusion::execute() {
 		auralHistogram = fAuralHist.get();	
 		cout << "Aural histogram successfully created" << endl;	
 		if(this->tempFiles) {
-			cout << "Salving aural histograms' into a file" << endl;
+			cout << "Salving aural histograms into a file" << endl;
 			InputOutput::writeCSV(baseFile + "_slf_aural_histogram_" + to_string(this->aDicSize) + ".csv", auralHistogram);
 		}		
 	}
@@ -112,10 +112,10 @@ void SimpleLateFusion::execute() {
 	vector< vector<double> > visualHistogram;
 	bool vHistControl = false;
 	if(this->tempFiles && InputOutput::checkFile(baseFile + "_slf_visual_histogram_" + to_string(this->vDicSize) + ".csv")) {
-		cout << "Loading visual histograms' from file" << endl;
+		cout << "Loading visual histograms from file" << endl;
 		visualHistogram = InputOutput::parseCSVHistograms(baseFile + "_slf_visual_histogram_" + to_string(this->vDicSize) + ".csv");
 	} else {
-		cout << "Creating visual histograms'" << endl;
+		cout << "Creating visual histograms" << endl;
 		fVisualHist = std::async(&Utils::createHistogramsFromDescriptors, visualDescriptors, visualDictionary);
 		vHistControl = true;
 	}
@@ -125,7 +125,7 @@ void SimpleLateFusion::execute() {
 		visualHistogram = fVisualHist.get();
 		cout << "Visual histogram successfully created" << endl;	
 		if(this->tempFiles) {
-			cout << "Salving visual histograms' into a file" << endl;
+			cout << "Salving visual histograms into a file" << endl;
 			InputOutput::writeCSV(baseFile + "_slf_visual_histogram_" + to_string(this->vDicSize) + ".csv", visualHistogram);
 		}
 	}

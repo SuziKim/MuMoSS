@@ -1,4 +1,4 @@
-# Introduction
+# MuMoSS
 MuMoSS (**Mu**lti**Mo**dal **S**cene **S**egmentator) is a video scene segmentator based on audiovisual features. The program features a set of different algorithms, using both the late and early fusion approaches.
 
 # Requirements
@@ -8,7 +8,7 @@ MuMoSS (**Mu**lti**Mo**dal **S**cene **S**egmentator) is a video scene segmentat
 *	Armadillo library v6.600+ (Avaliable at http://arma.sourceforge.net/)
 *	libssl-dev (for its MD5 algorithm)
 
-# Usage
+# Arguments
 		./MuMoSS <videoFilePath> <keyframesFilePath> <auralDescriptorsFolder> <algorithm> <visualDictionarySize> <auralDictionarySize> [<useTemporaryFiles> <verbose>]
 1. **videoFilePath** - The relative/absolute path to the video file which you want to segment.
 2. **keyframesFilePath** - The relative/absolute path to the CSV file which describes the selected keyframes for each shot of the video. The first value must be the shot number and the second the (global) frame number. There needs to have at least one keyframe for each shot. If in doubt, check the FAST (https://github.com/Trojahn/FAST) program for more details.
@@ -31,5 +31,5 @@ After the merging procedure, the *multimodal histograms* are used to perform the
 
 # Caveats
 1. This program may require a high amount of available memory. Typical values range from 2GB to 4GB for a 2h length 480p video.
-2. The program' memory consumption is directly related with the video length, resolution and number of keyframes. When facing memory problems, try to run with: a) a low resolution video; b) a video with loe duration; c) a fewer number of keyframes.
+2. The program' memory consumption is directly related with the video length, resolution and number of keyframes. When facing memory problems, try to run with: a) a low resolution video; b) a video with low duration; c) a fewer number of keyframes.
 		

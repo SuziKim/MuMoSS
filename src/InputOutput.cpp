@@ -73,7 +73,7 @@ vector<Mat> InputOutput::parseAuralDescriptors(string folder) {
 	}
 	vector<Mat> ret;
 	int base = 1;
-	if(InputOutput::checkFile(folder + "audio_0.sift")) {
+	if(InputOutput::checkFile(folder + "audio_0")) {
 		base = 0;
 	}
 	
@@ -114,8 +114,9 @@ void InputOutput::writeCSV(string file, vector< vector<double> > data) {
 
 void InputOutput::writeCSV(string file, vector< pair<int,int> > data) {
 	ofstream f (file.c_str());
-	for(int i = 0; i < data.size(); i++) {
-		f << data[i].first << "," << data[i].second << endl;
+	f << data[0].first << "," << data[0].second;
+	for(int i = 1; i < data.size(); i++) {
+		f << endl << data[i].first << "," << data[i].second;
 	}
 	f.close();
 }

@@ -85,6 +85,13 @@ vector<Mat> InputOutput::parseAuralDescriptors(string folder) {
 		ret.push_back(InputOutput::parseCSVDescriptor(fTemp));		
 		base++;
 	}
+	
+	if(ret.size() == 0){ 
+		cout.clear();
+		cout << "ERROR! There seems to not be any aural descriptor file available!" << endl;
+		exit(1); 
+	}
+	
 	return ret;
 }
 

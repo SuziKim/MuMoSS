@@ -78,7 +78,7 @@ void Utils::extractBoFHistogram(vector<double> &histogram, Mat &descriptor, Mat 
 	if(descriptor.cols != dictionary.cols) {
 		cout.clear();
 		cout << "ERROR! The BoF dictionary and the descriptors should have the same size!" << endl;
-		exit(-1); 
+		exit(1); 
 	}
 
 	for(int i = 0; i < dictionary.rows; i++) {
